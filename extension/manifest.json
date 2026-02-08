@@ -22,7 +22,7 @@
     }
   },
   "background": {
-    "service_worker": "service-worker-loader.js",
+    "service_worker": "background.js",
     "type": "module"
   },
   "content_scripts": [
@@ -32,7 +32,7 @@
         "https://category.vip.com/*",
         "https://list.vip.com/*"
       ],
-      "js": ["content-script-loader.js"]
+      "js": ["content.js"]
     }
   ],
   "web_accessible_resources": [

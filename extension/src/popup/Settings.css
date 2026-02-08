@@ -31,6 +31,29 @@
   font-size: 13px;
 }
 
+.help-text {
+  font-size: 11px;
+  color: #6b7280;
+  margin: 4px 0 0 0;
+}
+
+.test-result {
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.test-result.success {
+  background: #dcfce7;
+  color: #059669;
+}
+
+.test-result.error {
+  background: #fee2e2;
+  color: #dc2626;
+}
+
 .actions {
   display: flex;
   gap: 8px;

@@ -1,10 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Agent.css';
+import { analyzeImage } from '../lib/api';
+import { getAIConfig, saveSearchResult } from '../lib/storage';
+import type { SearchResult } from '../lib/storage';
 
 function Agent() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
   const [results, setResults] = useState<any[]>([]);
+  const [history, setHistory] = useState<SearchResult[]>([]);
+
+  // Load search history on mount
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    const h = await chrome.storage.local.get('searchHistory');
+    if (h.searchHistory) {
+      setHistory(h.searchHistory);
+    }
+  };
 
   const handleStart = async () => {
     if (!query.trim()) {
@@ -12,19 +28,23 @@ function Agent() {
       return;
     }
 
-    setStatus('正在分析页面...');
-    
-    try {
-      const config = await getStoredConfig();
-      if (!config?.apiKey) {
-        alert('请先配置 API Key');
-        setStatus('');
-        return;
-      }
+    const config = await getAIConfig();
+    if (!config?.apiKey) {
+      alert('请先配置 API Key');
+      setStatus('');
+      return;
+    }
 
+    setStatus('正在分析页面...');
+
+    try {
+      // Capture current tab screenshot
       const image = await captureTab();
+
+      // Construct prompt
       const prompt = constructPrompt(query);
 
+      // Call backend API
       const response = await analyzeImage({
         image,
         prompt,
@@ -37,9 +57,19 @@ function Agent() {
         return;
       }
 
-      const aiResult = JSON.parse(response.data.content);
+      // Parse AI response
+      const aiResult = parseAIResponse(response.data.content);
       setResults(aiResult.recommendations || []);
       setStatus('分析完成！');
+
+      // Save to history
+      await saveSearchResult({
+        query,
+        results: aiResult.recommendations || [],
+        timestamp: Date.now() as any
+      });
+      await loadHistory();
+
     } catch (error: any) {
       console.error('Agent error:', error);
       setStatus('');
@@ -47,9 +77,14 @@ function Agent() {
     }
   };
 
-  async function captureTab(): Promise<string> {
+  const handleHistoryClick = async (item: SearchResult) => {
+    setQuery(item.query);
+    setResults(item.results);
+  };
+
+  function captureTab(): Promise<string> {
     return new Promise((resolve, reject) => {
-      chrome.tabs.captureVisibleTab(null, { format: 'png' }, (dataUrl) => {
+      chrome.tabs.captureVisibleTab({ format: 'png' }, (dataUrl) => {
         if (chrome.runtime.lastError) {
           reject(chrome.runtime.lastError);
         } else {
@@ -61,8 +96,10 @@ function Agent() {
 
   function constructPrompt(userQuery: string): string {
     return `分析当前页面上的商品，找出符合用户需求的商品。
+
 用户需求: ${userQuery}
-请返回 JSON 格式：
+
+请返回 JSON 格式，确保可以正确解析：
 {
   "recommendations": [
     {
@@ -73,15 +110,21 @@ function Agent() {
       "match_reason": "推荐理由 (20字以内)"
     }
   ]
-}`;
+
+只返回 JSON，不要有其他文字。`;
   }
 
-  async function getStoredConfig(): Promise<any> {
-    return new Promise((resolve) => {
-      chrome.storage.local.get('aiConfig', (result) => {
-        resolve(result.aiConfig || null);
-      });
-    });
+  function parseAIResponse(content: string): any {
+    try {
+      // Try to extract JSON from response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      return { recommendations: [] };
+    } catch {
+      return { recommendations: [] };
+    }
   }
 
   return (
@@ -119,6 +162,20 @@ function Agent() {
                   <p className="reason">{r.match_reason}</p>
                 </div>
                 <button className="fav-btn">⭐ 收藏</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {results.length === 0 && history.length > 0 && (
+        <div className="history-section">
+          <h3>最近搜索</h3>
+          <div className="history">
+            {history.slice(0, 3).map((item, i) => (
+              <div key={i} className="history-item" onClick={() => handleHistoryClick(item)}>
+                <p>{item.query}</p>
+                <span className="time">{new Date(item.timestamp).toLocaleDateString()}</span>
               </div>
             ))}
           </div>

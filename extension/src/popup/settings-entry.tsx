@@ -1,11 +1,11 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import Agent from './Agent';
+import Settings from './Settings';
 import '../index.css';
-import './Agent.css';
+import './Settings.css';
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>
-    <Agent />
+    <Settings />
   </React.StrictMode>
 );

@@ -1,17 +1,64 @@
-import type { AnalyzeRequest, AnalyzeResponse } from '../types';
+/**
+ * Backend API Client
+ */
 
-// Local dev URL, needs replacement in production
-const API_BASE_URL = 'http://localhost:3000';
+export interface AnalyzeRequest {
+  image: string;
+  prompt: string;
+  config: {
+    apiKey: string;
+    provider?: string;
+  };
+}
 
+export interface AnalyzeResponse {
+  success: boolean;
+  data?: {
+    content: string;
+    usage?: any;
+  };
+  error?: string;
+}
+
+import { getApiBaseUrl } from './storage';
+
+/**
+ * Analyze image using backend API
+ */
 export async function analyzeImage(req: AnalyzeRequest): Promise<AnalyzeResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+    const apiBaseUrl = await getApiBaseUrl();
+    const response = await fetch(`${apiBaseUrl}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(req),
     });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
     return await response.json();
   } catch (error: any) {
-    return { success: false, error: error.message || 'Network error' };
+    return {
+      success: false,
+      error: error.message || '网络错误，请检查后端服务是否运行'
+    };
+  }
+}
+
+/**
+ * Test API connection
+ */
+export async function testApiConnection(config: { apiKey: string; apiBaseUrl?: string }): Promise<boolean> {
+  try {
+    const apiBaseUrl = config.apiBaseUrl || 'http://localhost:3000';
+    const response = await fetch(`${apiBaseUrl}/`, {
+      method: 'GET',
+    });
+    return response.ok;
+  } catch {
+    return false;
   }
 }

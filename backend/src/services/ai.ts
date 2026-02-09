@@ -11,7 +11,7 @@ export async function callZhipuVision(apiKey: string, req: VisionRequest): Promi
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'GLM-4.6V',
+        model: 'glm-4.6v',
         messages: [{
           role: 'user',
           content: [

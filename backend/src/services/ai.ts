@@ -1,17 +1,17 @@
 import type { VisionRequest, VisionResponse } from '../types';
 
 export async function callZhipuVision(apiKey: string, req: VisionRequest): Promise<VisionResponse> {
-  console.log('Calling Zhipu GLM-4V...');
-  
+  console.log('Calling Zhipu GLM-4.6V...');
+
   try {
-    const response = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+    const response = await fetch('https://api.z.ai/api/paas/v4/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'glm-4v',
+        model: 'GLM-4.6V',
         messages: [{
           role: 'user',
           content: [

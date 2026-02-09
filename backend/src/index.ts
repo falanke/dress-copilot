@@ -35,7 +35,8 @@ app.post('/api/analyze', async (c) => {
   }
 });
 
-export default {
-  port: 3000,
-  fetch: app.fetch,
-};
+import { serve } from '@hono/node-server';
+
+const port = 3000;
+console.log(`DressCopilot API running on http://localhost:${port}`);
+serve({ fetch: app.fetch, port });

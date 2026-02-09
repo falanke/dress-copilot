@@ -31,7 +31,11 @@ export async function analyzeImage(req: AnalyzeRequest): Promise<AnalyzeResponse
     const response = await fetch(`${apiBaseUrl}/api/analyze`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(req),
+      body: JSON.stringify({
+        image: req.image,
+        prompt: req.prompt,
+        apiKey: req.config.apiKey,
+      }),
     });
 
     if (!response.ok) {

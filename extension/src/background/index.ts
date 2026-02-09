@@ -24,14 +24,6 @@ chrome.runtime.onInstalled.addListener((details) => {
 });
 
 /**
- * Handle extension icon click (alternative to popup)
- */
-chrome.action.onClicked.addListener((tab) => {
-  // Popup is set in manifest, this is for potential future features
-  console.log('Extension clicked on tab:', tab.id);
-});
-
-/**
  * Listen for tab updates
  */
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {

@@ -2,6 +2,8 @@
  * Chrome Storage Utilities
  */
 
+import type { AIRecommendation } from './types';
+
 export interface AIConfig {
   apiKey: string;
   provider: 'zhipu' | 'qwen' | 'minimax' | 'custom';
@@ -11,7 +13,7 @@ export interface AIConfig {
 
 export interface SearchResult {
   query: string;
-  results: any[];
+  results: AIRecommendation[];
   timestamp: number;
 }
 

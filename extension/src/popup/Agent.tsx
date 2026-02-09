@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import './Agent.css';
 import { analyzeImage } from '../lib/api';
-import { getAIConfig, saveSearchResult } from '../lib/storage';
+import { getAIConfig, getSearchHistory, saveSearchResult } from '../lib/storage';
 import type { SearchResult } from '../lib/storage';
+import type { AIRecommendation } from '../lib/types';
 
 function Agent() {
   const [query, setQuery] = useState('');
   const [status, setStatus] = useState('');
-  const [results, setResults] = useState<any[]>([]);
+  const [results, setResults] = useState<AIRecommendation[]>([]);
   const [history, setHistory] = useState<SearchResult[]>([]);
 
   // Load search history on mount
@@ -16,10 +17,8 @@ function Agent() {
   }, []);
 
   const loadHistory = async () => {
-    const h = await chrome.storage.local.get('searchHistory');
-    if (h.searchHistory) {
-      setHistory(h.searchHistory);
-    }
+    const h = await getSearchHistory();
+    setHistory(h);
   };
 
   const handleStart = async () => {
@@ -66,7 +65,7 @@ function Agent() {
       await saveSearchResult({
         query,
         results: aiResult.recommendations || [],
-        timestamp: Date.now() as any
+        timestamp: Date.now()
       });
       await loadHistory();
 
@@ -110,11 +109,12 @@ function Agent() {
       "match_reason": "推荐理由 (20字以内)"
     }
   ]
+}
 
 只返回 JSON，不要有其他文字。`;
   }
 
-  function parseAIResponse(content: string): any {
+  function parseAIResponse(content: string): { recommendations: AIRecommendation[] } {
     try {
       // Try to extract JSON from response
       const jsonMatch = content.match(/\{[\s\S]*\}/);

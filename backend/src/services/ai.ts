@@ -35,6 +35,9 @@ export async function callZhipuVision(apiKey: string, req: VisionRequest): Promi
     }
 
     const data = await response.json();
+    if (!data.choices?.length || !data.choices[0].message?.content) {
+      throw new Error('Zhipu API returned an unexpected response: no choices available');
+    }
     return {
       content: data.choices[0].message.content,
       usage: data.usage

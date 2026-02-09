@@ -9,10 +9,5 @@ export interface AIRecommendation {
   brand: string;
   price: string;
   match_reason: string;
-  action: string;
-}
-
-export interface AIConfig {
-  apiKey: string;
-  provider: 'zhipu' | 'qwen' | 'minimax' | 'custom';
+  action?: string;
 }

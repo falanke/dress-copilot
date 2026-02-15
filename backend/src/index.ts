@@ -241,6 +241,6 @@ app.post('/api/history', authMiddleware, async (c) => {
 
 import { serve } from '@hono/node-server';
 
-const port = 3000;
-console.log(`DressCopilot API running on http://localhost:${port}`);
+const port = parseInt(process.env.PORT || '3000', 10);
+console.log(`DressCopilot API running on port ${port}`);
 serve({ fetch: app.fetch, port });
